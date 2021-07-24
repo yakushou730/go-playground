@@ -30,6 +30,10 @@ func init() {
 	}
 }
 
+// @title 部落格系統
+// @version 1.0
+// @description Go 語言程式設計之旅: 一起用 Go 做專案
+// @termsOfService https://github.com/yakushou730/go-playground
 func main() {
 	gin.SetMode(global.ServerSetting.RunMode)
 	router := routes.NewRouter()

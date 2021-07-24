@@ -1,2 +1,3 @@
 .idea/
 blog-service/storage/logs/*
+blog-service/storage/uploads/*

@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+	"playground/blog-service/global"
 	"playground/blog-service/internal/middleware"
 	v1 "playground/blog-service/internal/routes/api/v1"
 
@@ -19,6 +21,10 @@ func NewRouter() *gin.Engine {
 	r.Use(middleware.Translations())
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	upload := NewUpload()
+	r.POST("/upload/file", upload.UploadFile)
+	r.StaticFS("/static", http.Dir(global.AppSetting.UploadSavePath))
 
 	article := v1.NewArticle()
 	tag := v1.NewTag()

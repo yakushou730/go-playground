@@ -1,6 +1,11 @@
 package v1
 
 import (
+	"playground/blog-service/global"
+	"playground/blog-service/internal/service"
+	"playground/blog-service/pkg/app"
+	"playground/blog-service/pkg/errcode"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +27,19 @@ func (t Tag) Get(c *gin.Context) {}
 // @Failure 400 {object} errcode.Error "請求錯誤"
 // @Failure 500 {object} errcode.Error "內部錯誤"
 // @Router /api/v1/tags [get]
-func (t Tag) List(c *gin.Context) {}
+func (t Tag) List(c *gin.Context) {
+	params := service.TagListRequest{}
+	response := app.NewResponse(c)
+	valid, errs := app.BindAndValid(c, &params)
+	if !valid {
+		global.Logger.Errorf("app.BindAndValid errs: %v", errs)
+		errRsp := errcode.InvalidParams.WithDetails(errs.Errors()...)
+		response.ToErrorResponse(errRsp)
+		return
+	}
+	response.ToResponse(gin.H{})
+	return
+}
 
 // @Summary 新增標籤
 // @Produce json

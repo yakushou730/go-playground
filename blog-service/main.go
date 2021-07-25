@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"playground/blog-service/global"
@@ -9,6 +10,7 @@ import (
 	"playground/blog-service/pkg/logger"
 	"playground/blog-service/pkg/setting"
 	"playground/blog-service/pkg/tracer"
+	"strings"
 	"time"
 
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -16,8 +18,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	port    string
+	runMode string
+	config  string
+)
+
 func init() {
-	err := setupSetting()
+	err := setupFlag()
+	if err != nil {
+		log.Fatalf("init.setupFlag err: %v", err)
+	}
+	err = setupSetting()
 	if err != nil {
 		log.Fatalf("init.setuptSetting err: %v", err)
 	}
@@ -53,34 +65,42 @@ func main() {
 }
 
 func setupSetting() error {
-	setting, err := setting.NewSetting()
+	s, err := setting.NewSetting(strings.Split(config, ",")...)
 	if err != nil {
 		return err
 	}
-	err = setting.ReadSection("Server", &global.ServerSetting)
+	err = s.ReadSection("Server", &global.ServerSetting)
 	if err != nil {
 		return err
 	}
-	err = setting.ReadSection("App", &global.AppSetting)
+	err = s.ReadSection("App", &global.AppSetting)
 	if err != nil {
 		return err
 	}
-	err = setting.ReadSection("Database", &global.DatabaseSetting)
+	err = s.ReadSection("Database", &global.DatabaseSetting)
 	if err != nil {
 		return err
 	}
 	global.ServerSetting.ReadTimeout *= time.Second
 	global.ServerSetting.WriteTimeout *= time.Second
 
-	err = setting.ReadSection("JWT", &global.JWTSetting)
+	err = s.ReadSection("JWT", &global.JWTSetting)
 	if err != nil {
 		return err
 	}
 	global.JWTSetting.Expire *= time.Second
-	err = setting.ReadSection("Email", &global.EmailSetting)
+	err = s.ReadSection("Email", &global.EmailSetting)
 	if err != nil {
 		return err
 	}
+
+	if port != "" {
+		global.ServerSetting.HttpPort = port
+	}
+	if runMode != "" {
+		global.ServerSetting.RunMode = runMode
+	}
+
 	return nil
 }
 
@@ -113,5 +133,14 @@ func setupTracer() error {
 		return err
 	}
 	global.Tracer = jaegerTracer
+	return nil
+}
+
+func setupFlag() error {
+	flag.StringVar(&port, "port", "", "啟動通訊埠")
+	flag.StringVar(&runMode, "mode", "", "啟動模式")
+	flag.StringVar(&config, "config", "configs/", "指定要使用的設定檔路徑")
+	flag.Parse()
+
 	return nil
 }

@@ -16,6 +16,7 @@ App:
     - .jpg
     - .jpeg
     - .png
+  DefaultContextTimeout: 60
 Database:
   DBType: mysql
   Username: shou
@@ -31,3 +32,12 @@ JWT:
   Secret: test-secret
   Issuer: blog-service
   Expire: 7200
+Email:
+  Host: smtp.qq.com
+  Port: 465
+  UserName: xxx
+  Password: xxx
+  IsSSL: true
+  From: xxx
+  To:
+    - xxx

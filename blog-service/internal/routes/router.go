@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"playground/blog-service/global"
 	"playground/blog-service/internal/middleware"
+	"playground/blog-service/internal/routes/api"
 	v1 "playground/blog-service/internal/routes/api/v1"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -25,6 +26,8 @@ func NewRouter() *gin.Engine {
 	upload := NewUpload()
 	r.POST("/upload/file", upload.UploadFile)
 	r.StaticFS("/static", http.Dir(global.AppSetting.UploadSavePath))
+
+	r.GET("/auth", api.GetAuth)
 
 	article := v1.NewArticle()
 	tag := v1.NewTag()

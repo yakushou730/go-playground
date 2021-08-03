@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"playground/tag-service/pkg/bapi"
+	"playground/tag-service/pkg/errcode"
 	pb "playground/tag-service/proto"
 )
 
@@ -19,7 +20,7 @@ func (t *TagServer) GetTagList(ctx context.Context, r *pb.GetTagListRequest) (*p
 	api := bapi.NewAPI("http://localhost:8000")
 	body, err := api.GetTagList(ctx, r.GetName(), r.GetState())
 	if err != nil {
-		return nil, err
+		return nil, errcode.TogRPCError(errcode.ErrorGetTagListFail)
 	}
 	tagList := pb.GetTagListReply{}
 	err = json.Unmarshal(body, &tagList)

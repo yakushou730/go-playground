@@ -8,57 +8,65 @@ import (
 	pb "playground/tag-service/proto"
 	"playground/tag-service/server"
 
+	"github.com/soheilhy/cmux"
+
 	"google.golang.org/grpc/reflection"
 
 	"google.golang.org/grpc"
 )
 
-var grpcPort string
-var httpPort string
+var port string
 
 func init() {
-	flag.StringVar(&grpcPort, "grpc_port", "8001", "gRPC啟動埠編號")
-	flag.StringVar(&httpPort, "http_port", "9001", "HTTP啟動埠編號")
+	flag.StringVar(&port, "port", "8003", "啟動通訊埠編號")
 	flag.Parse()
 }
 
-func RunHttpServer(port string) error {
+func RunTCPServer(port string) (net.Listener, error) {
+	return net.Listen("tcp", ":"+port)
+}
+
+func RunHttpServer(port string) *http.Server {
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc("/ping",
 		func(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("pong"))
 		},
 	)
-	return http.ListenAndServe(":"+port, serveMux)
+	return &http.Server{
+		Addr:    ":" + port,
+		Handler: serveMux,
+	}
 }
-func RunGrpcServer(port string) error {
+
+func RunGrpcServer() *grpc.Server {
 	s := grpc.NewServer()
 	pb.RegisterTagServiceServer(s, server.NewTagServer())
 	reflection.Register(s)
-	lis, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		return err
-	}
-	return s.Serve(lis)
+
+	return s
 }
 
 func main() {
-	errs := make(chan error)
-	go func() {
-		err := RunHttpServer(httpPort)
-		if err != nil {
-			errs <- err
-		}
-	}()
-	go func() {
-		err := RunGrpcServer(grpcPort)
-		if err != nil {
-			errs <- err
-		}
-	}()
+	l, err := RunTCPServer(port)
+	if err != nil {
+		log.Fatalf("Run TCP Server err: %v", err)
+	}
+	m := cmux.New(l)
+	grpcL := m.MatchWithWriters(
+		cmux.HTTP2MatchHeaderFieldPrefixSendSettings(
+			"content-type",
+			"application/grpc",
+		),
+	)
+	httpL := m.Match(cmux.HTTP1Fast())
+	grpcS := RunGrpcServer()
+	httpS := RunHttpServer(port)
+	go grpcS.Serve(grpcL)
+	go httpS.Serve(httpL)
 
-	select {
-	case err := <-errs:
-		log.Fatalf("Run server err: %v", err)
+	err = m.Serve()
+	if err != nil {
+		log.Fatalf("Run Serve err: %v", err)
 	}
 }

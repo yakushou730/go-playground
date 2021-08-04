@@ -24,6 +24,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/smacker/opentracing-gorm v0.0.0-20181207094635-cd4974441042 // indirect
+	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/cast v1.4.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1

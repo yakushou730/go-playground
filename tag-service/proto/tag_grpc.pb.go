@@ -97,5 +97,5 @@ var TagService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/tag.proto",
+	Metadata: "tag.proto",
 }

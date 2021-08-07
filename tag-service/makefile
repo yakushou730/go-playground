@@ -8,7 +8,8 @@ generate_go_pb_file:
 	  --go-grpc_opt paths=source_relative \
 	  --grpc-gateway_out=logtostderr=true:./proto \
 	  --grpc-gateway_opt paths=source_relative \
+	  --swagger_out=logtostderr=true:./proto \
 	  ./proto/*.proto
 
 clean:
-	rm -f ./proto/*.pb.go ./proto/*.pb.gw.go
+	rm -f ./proto/*.pb.go ./proto/*.pb.gw.go ./proto/*.swagger.json

@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eddycjy/opentracing-gorm v0.0.0-20200209122056-516a807d2182
+	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
@@ -20,6 +21,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jinzhu/gorm v1.9.16
+	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
 	github.com/juju/ratelimit v1.0.1
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

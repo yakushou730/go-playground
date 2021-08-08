@@ -6,10 +6,13 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"playground/tag-service/internal/middleware"
 	"playground/tag-service/pkg/ui/data/swagger"
 	pb "playground/tag-service/proto"
 	"playground/tag-service/server"
 	"strings"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 
@@ -43,7 +46,7 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 
 func RunServer(port string) error {
 	httpMux := RunHttpServer()
-	grpcS := RunGrpcServer()
+	grpcS := runGrpcServer()
 	gatewayMux := RunGrpcGatewayServer()
 
 	httpMux.Handle("/", gatewayMux)
@@ -81,14 +84,6 @@ func RunHttpServer() *http.ServeMux {
 	return serveMux
 }
 
-func RunGrpcServer() *grpc.Server {
-	s := grpc.NewServer()
-	pb.RegisterTagServiceServer(s, server.NewTagServer())
-	reflection.Register(s)
-
-	return s
-}
-
 func RunGrpcGatewayServer() *runtime.ServeMux {
 	endpoint := "0.0.0.0:" + port
 	gwmux := runtime.NewServeMux()
@@ -96,6 +91,37 @@ func RunGrpcGatewayServer() *runtime.ServeMux {
 	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
 
 	return gwmux
+}
+
+func runGrpcServer() *grpc.Server {
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			HelloInterceptor,
+			WorldInterceptor,
+			middleware.AccessLog,
+			middleware.ErrorLog,
+			middleware.Recovery,
+		)),
+	}
+	s := grpc.NewServer(opts...)
+	pb.RegisterTagServiceServer(s, server.NewTagServer())
+	reflection.Register(s)
+
+	return s
+}
+
+func HelloInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	log.Println("hi, hello")
+	resp, err := handler(ctx, req)
+	log.Println("bye, hello")
+	return resp, err
+}
+
+func WorldInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	log.Println("hi, world")
+	resp, err := handler(ctx, req)
+	log.Println("bye, world")
+	return resp, err
 }
 
 func main() {

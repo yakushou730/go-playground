@@ -3,14 +3,21 @@ package main
 import (
 	"context"
 	"log"
+	"playground/tag-service/internal/middleware"
 	pb "playground/tag-service/proto"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
 	ctx := context.Background()
-	clientConn, _ := GetClientConn(ctx, "localhost:50051", nil)
+	clientConn, _ := GetClientConn(ctx, "localhost:8004", []grpc.DialOption{grpc.WithUnaryInterceptor(
+		grpc_middleware.ChainUnaryClient(
+			middleware.UnaryContextTimeout(),
+		),
+	)})
 	defer clientConn.Close()
 
 	tagServiceClient := pb.NewTagServiceClient(clientConn)

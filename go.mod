@@ -24,6 +24,7 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
 	github.com/juju/ratelimit v1.0.1
+	github.com/klauspost/compress v1.13.3 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
@@ -51,4 +52,5 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	nhooyr.io/websocket v1.8.7 // indirect
 )

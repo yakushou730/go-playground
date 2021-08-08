@@ -16,6 +16,7 @@ func main() {
 	clientConn, _ := GetClientConn(ctx, "localhost:8004", []grpc.DialOption{grpc.WithUnaryInterceptor(
 		grpc_middleware.ChainUnaryClient(
 			middleware.UnaryContextTimeout(),
+			middleware.ClientTracing(),
 		),
 	)})
 	defer clientConn.Close()

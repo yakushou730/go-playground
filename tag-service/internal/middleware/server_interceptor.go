@@ -3,9 +3,16 @@ package middleware
 import (
 	"context"
 	"log"
+	"playground/blog-service/global"
 	"playground/tag-service/pkg/errcode"
+	"playground/tag-service/pkg/metatext"
 	"runtime/debug"
 	"time"
+
+	"github.com/opentracing/opentracing-go/ext"
+
+	"github.com/opentracing/opentracing-go"
+	"google.golang.org/grpc/metadata"
 
 	"google.golang.org/grpc"
 )
@@ -41,5 +48,26 @@ func Recovery(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, 
 			log.Printf(recoveryLog, info.FullMethod, e, string(debug.Stack()[:]))
 		}
 	}()
+	return handler(ctx, req)
+}
+
+func ServerTracing(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		md = metadata.New(nil)
+	}
+	parentSpanContext, _ := global.Tracer.Extract(opentracing.TextMap, metatext.MetadataTextMap{md})
+	spanOpts := []opentracing.StartSpanOption{
+		opentracing.Tag{
+			Key:   string(ext.Component),
+			Value: "gPRC",
+		},
+		ext.SpanKindRPCServer,
+		ext.RPCServerOption(parentSpanContext),
+	}
+	span := global.Tracer.StartSpan(info.FullMethod, spanOpts...)
+	defer span.Finish()
+
+	ctx = opentracing.ContextWithSpan(ctx, span)
 	return handler(ctx, req)
 }
